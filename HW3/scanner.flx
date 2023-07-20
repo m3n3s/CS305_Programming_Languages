@@ -1,0 +1,62 @@
+%{
+#include "hw3.h"
+#include "hw3.tab.h" 
+#include <string.h>
+int line_in = 1;
+%}
+%%
+
+['][^']*[']		{
+			int i;
+                  	for (i=0; i<yyleng ;i++){
+                        if (yytext[i]=='\n')
+                                line_in++;
+			}
+			yytext[yyleng-1]='\0';
+			yylval.string_value = strdup(yytext+1);
+			return tSTRING;
+			
+			}
+"\n"			{line_in++;}
+
+
+["]Get["]		return tGET;
+["]Set["]		return tSET;
+["]Function["]		return tFUNCTION;
+["]Print["]		return tPRINT;
+["]If["]		return tIF;
+["]Return["]		return tRETURN;
+
+["]"+"["]		{yylval.lineno = line_in; return tADD;}
+["]"-"["] 		{yylval.lineno = line_in; return tSUB;}
+["]"*"["] 		{yylval.lineno = line_in; return tMUL;}
+["]"/"["] 		{yylval.lineno = line_in; return tDIV;}
+["]"++"["]		return tINC;
+["]">"["]		return tGT;
+["]"=="["]		return tEQUALITY;
+["]"--"["]		return tDEC;
+["]"<"["]		return tLT;
+["]"<="["]		return tLEQ;
+["]">="["]		return tGEQ;
+
+
+["][_a-zA-Z][a-zA-Z0-9_]*["]	return tIDENT;
+				
+[0-9]+ |
+-[0-9]+ 		{
+                        yylval.numNode.numValue = atoi (yytext);
+                        yylval.numNode.trail = 0;
+			return tNUM;
+                        }		
+[0-9]+"."[0-9]+	|
+-[0-9]+"."[0-9]+	{
+			yylval.numNode.numValue = atof (yytext);
+			yylval.numNode.trail = 1;
+			return tNUM; 
+			}
+	
+[ \t]+ 
+.			return yytext[0];
+
+%%
+
